@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 
 public class FileServer {
 
-	public final static Logger logger = LoggerFactory.getLogger(FileServer.class);
+	public static final Logger logger = LoggerFactory.getLogger(FileServer.class);
+	
+	public static final int PORT = 12345;
 
 	public FileServer() {
 		Executor executor = Executors.newCachedThreadPool();
@@ -19,7 +21,7 @@ public class FileServer {
 
 		try {
 			@SuppressWarnings("resource")
-			ServerSocket serverSocket = new ServerSocket(12345);
+			ServerSocket serverSocket = new ServerSocket(PORT);
 			while (true) {
 				Socket socket = serverSocket.accept();
 				logger.info("Received connection from {}.", socket.getInetAddress());

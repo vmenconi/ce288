@@ -10,13 +10,13 @@ public class ExecutionInfo {
 	
 	private UUID clientId;
 	
-	private UUID taskId;
+	private Task task;
 	
-	public ExecutionInfo(long startTime, long timeout, UUID clientId, UUID taskId) {
+	public ExecutionInfo(long startTime, long timeout, UUID clientId, Task task) {
 		this.startTime = startTime;
 		this.timeout = timeout;
 		this.clientId = clientId;
-		this.taskId = taskId;
+		this.task = task;
 	}
 
 	public long getStartTime() {
@@ -47,11 +47,11 @@ public class ExecutionInfo {
 		this.clientId = clientId;
 	}
 
-	public UUID getTaskId() {
-		return taskId;
+	public Task getTask() {
+		return task;
 	}
 
-	public void setTaskId(UUID taskId) {
-		this.taskId = taskId;
+	public void setTaskId(Task task) {
+		this.task = task;
 	}
 }

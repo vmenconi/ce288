@@ -1,18 +1,19 @@
 package ce288.tasks;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ExpirationWatchdog implements Runnable {
 
+	public final static Logger logger = LoggerFactory.getLogger(TaskRepository.class);
+
 	private long period;
 
-	private Map<UUID, ExecutionInfo> executingTasks;
+	private TaskRepository repository;
 
-	public ExpirationWatchdog(Map<UUID, ExecutionInfo> executingTasks, long period) {
-		this.executingTasks = executingTasks;
+	public ExpirationWatchdog(TaskRepository repository, long period) {
+		this.repository = repository;
 		this.period = period;
 	}
 
@@ -21,19 +22,9 @@ public class ExpirationWatchdog implements Runnable {
 		while (true) {
 			try {
 				Thread.sleep(period);
-				Set<UUID> keys = executingTasks.keySet();
-				synchronized (keys) {
-					Iterator<UUID> iter = keys.iterator();
-					while (iter.hasNext()) {
-						UUID key = iter.next();
-						if (executingTasks.get(key).isExpired()) {
-							executingTasks.remove(key);
-						}
-					}
-				}
+				repository.removeExpired();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 			}
 		}
 	}

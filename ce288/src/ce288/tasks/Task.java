@@ -1,6 +1,7 @@
 package ce288.tasks;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.UUID;
 
 public class Task implements Serializable {
@@ -19,14 +20,17 @@ public class Task implements Serializable {
 	private long position;
 
 	private long length;
+	
+	private InetAddress location;
 
 	public Task() {
 		this.id = UUID.randomUUID();
 	}
 	
-	public Task(FileFormat format, String filename, long position, long length) {
+	public Task(FileFormat format, InetAddress location, String filename, long position, long length) {
 		this();
 		this.format = format;
+		this.location = location;
 		this.filename = filename;
 		this.position = position;
 		this.length = length;
@@ -62,6 +66,14 @@ public class Task implements Serializable {
 
 	public void setLength(long length) {
 		this.length = length;
+	}
+
+	public InetAddress getLocation() {
+		return location;
+	}
+
+	public void setLocation(InetAddress location) {
+		this.location = location;
 	}
 
 	public UUID getId() {

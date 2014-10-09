@@ -20,7 +20,6 @@ public class FileServerWorker implements Runnable {
 
 	@Override
 	public synchronized void run() {
-		logger.info("Worker started.");
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
@@ -54,7 +53,7 @@ public class FileServerWorker implements Runnable {
 			
 			out.flush();
 			socket.close();
-			logger.info("Worker finished.");
+			logger.info("Closed connection from {}.", socket.getInetAddress().getHostName());
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
 		}
