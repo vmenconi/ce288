@@ -15,7 +15,7 @@ public class FileServer {
 	
 	public static final int PORT = 12345;
 
-	public FileServer() {
+	public FileServer(String path) {
 		Executor executor = Executors.newCachedThreadPool();
 		logger.info("File server started.");
 
@@ -25,7 +25,7 @@ public class FileServer {
 			while (true) {
 				Socket socket = serverSocket.accept();
 				logger.info("Received connection from {}.", socket.getInetAddress());
-				executor.execute(new FileServerWorker(socket));
+				executor.execute(new FileServerWorker(socket, path));
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);
@@ -33,7 +33,11 @@ public class FileServer {
 	}
 
 	public static void main(String[] args) {
-		new FileServer();
+		if (args.length >= 1) {
+			new FileServer(args[0]);
+		} else {
+			logger.error("Missing path argument.");
+		}
 	}
 
 }

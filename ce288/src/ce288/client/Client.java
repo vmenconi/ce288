@@ -61,7 +61,7 @@ public class Client {
 					} catch (IOException e) {
 						logger.error(e.getMessage(), e);
 					}
-//					stub.setResult(id, task.getId(), new Result());
+					stub.setResult(id, task.getId(), new Result());
 				}
 			}
 		} catch (IOException | NotBoundException | InterruptedException e) {

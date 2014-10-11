@@ -64,8 +64,7 @@ public class Server {
 		if (localAddress == null) {
 			throw new RuntimeException("Unable to determine address");
 		}
-		tasks.addTask(new Task(FileFormat.EMBRACE, localAddress, "teste001.txt", 12, 45));
-		tasks.addTask(new Task(FileFormat.IAGA_DHZF, localAddress, "teste002.txt", 452, 11111));
+		tasks.addTask(new Task(FileFormat.EMBRACE, localAddress, "teste.txt", 0, 173));
 	}
 
 	public static void main(String[] args) {

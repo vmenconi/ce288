@@ -2,9 +2,13 @@ package ce288.fileServer;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,17 +16,22 @@ import org.slf4j.LoggerFactory;
 public class FileServerWorker implements Runnable {
 
 	public final static Logger logger = LoggerFactory.getLogger(FileServerWorker.class);
+
+	private static final int BUFSIZE = 8192;
+
 	private Socket socket;
 
-	public FileServerWorker(Socket socket) {
+	private String path;
+
+	public FileServerWorker(Socket socket, String path) {
 		this.socket = socket;
+		this.path = path;
 	}
 
 	@Override
 	public synchronized void run() {
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					socket.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream());
 
 			String line = in.readLine();
@@ -31,7 +40,7 @@ public class FileServerWorker implements Runnable {
 				socket.close();
 				return;
 			}
-			out.write(("Received " + line + "\n").getBytes());
+			String filename = path + File.separatorChar + line;
 
 			line = in.readLine();
 			if (line == null) {
@@ -39,8 +48,7 @@ public class FileServerWorker implements Runnable {
 				socket.close();
 				return;
 			}
-			logger.info("The value is {}", Long.parseLong(line));
-			out.write(("Received " + line + "\n").getBytes());
+			long pos = Long.parseLong(line);
 
 			line = in.readLine();
 			if (line == null) {
@@ -48,13 +56,34 @@ public class FileServerWorker implements Runnable {
 				socket.close();
 				return;
 			}
-			logger.info("The value is {}", Long.parseLong(line));
-			out.write(("Received " + line + "\n").getBytes());
-			
+			int length = Integer.parseInt(line);
+
+			RandomAccessFile file = new RandomAccessFile(filename, "r");
+			file.seek(pos);
+			FileChannel channel = file.getChannel();
+			ByteBuffer byteBuffer = ByteBuffer.allocateDirect(length);
+			byte[] byteArray = new byte[BUFSIZE];
+			int numRead, numGet;
+			int totalRead = 0;
+			while ((numRead = channel.read(byteBuffer)) != -1 || totalRead >= length) {
+				if (numRead == 0) {
+					continue;
+				}
+				totalRead += numRead;
+				while (byteBuffer.hasRemaining()) {
+					numGet = Math.min(byteBuffer.remaining(), BUFSIZE);
+					byteBuffer.get(byteArray, 0, numGet);
+					out.write(byteArray, 0, numGet);
+				}
+				byteBuffer.clear();
+			}
+			file.close();
+
 			out.flush();
+			out.close();
 			socket.close();
 			logger.info("Closed connection from {}.", socket.getInetAddress().getHostName());
-		} catch (IOException e) {
+		} catch (IOException | NumberFormatException e) {
 			logger.error(e.getMessage(), e);
 		}
 
