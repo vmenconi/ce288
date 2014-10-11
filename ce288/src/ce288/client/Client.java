@@ -1,6 +1,5 @@
 package ce288.client;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ce288.fileServer.FileServer;
-import ce288.tasks.Result;
 import ce288.tasks.Task;
 import ce288.tasks.TaskRepositoryInterface;
 
@@ -28,7 +26,7 @@ public class Client {
 		id = UUID.randomUUID();
 	}
 
-	public void run() {
+	public void execute() {
 		logger.info("Client {} started.", id);
 		try {
 			Registry registry = LocateRegistry.getRegistry();
@@ -41,10 +39,8 @@ public class Client {
 					logger.info("Client started task {}.", task.getId());
 					try {
 						Socket socket = new Socket(task.getLocation(), FileServer.PORT);
-						byte[] buffer = new byte[8192];
 						BufferedWriter out = new BufferedWriter(
 								new OutputStreamWriter(socket.getOutputStream()));
-						BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
 						out.write(task.getFilename());
 						out.newLine();
 						out.write(Long.toString(task.getPosition()));
@@ -52,16 +48,13 @@ public class Client {
 						out.write(Long.toString(task.getLength()));
 						out.newLine();
 						out.flush();
-						int num;
-						while ((num = in.read(buffer)) > 0) {
-							logger.debug("Received {} bytes: {}", num, new String(buffer, 0, num).trim());
-						}
+						AbstractFileAnalyser analyser = AbstractFileAnalyserFactory.getAnalyser(task.getFormat());
+						analyser.process(id, socket.getInputStream(), task, stub);
 						socket.close();
 						logger.info("Task {} finished.", task.getId());
 					} catch (IOException e) {
 						logger.error(e.getMessage(), e);
 					}
-					stub.setResult(id, task.getId(), new Result());
 				}
 			}
 		} catch (IOException | NotBoundException | InterruptedException e) {
@@ -71,6 +64,6 @@ public class Client {
 
 	public static void main(String[] args) {
 		Client client = new Client();
-		client.run();
+		client.execute();
 	}
 }
